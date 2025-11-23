@@ -1,0 +1,47 @@
+# Secret Rotation Bicep Local Extension (Experimental)
+
+Custom Bicep Local Extension to rotate secrets from source (e.g. Entra Id) and save it in target (e.g. KeyVault) using Bicep.
+
+> [!WARNING]
+> Local-Deploy is an experimental Bicep feature and is subject to change.  
+> Do not use it in production.
+
+## Capabilities
+
+- Create/Rotate secrets in source:
+  - Entra Id (App Registration)
+- Save/Update rotated secrets at target:
+  - Azure Key Vault
+
+## Prerequisites
+
+- .NET 9 SDK
+- Bicep CLI v0.37.4+ (for `local-deploy`)
+
+## How to use it locally or via an Azure Container Registry (ACR)
+
+Here are the steps to run it either locally or using an ACR.
+
+### Local Development
+
+1. Publish and run secret rotation extension locally: 
+    ```powershell
+    .\infra\scripts\Publish-Extension.ps1 -Target ./secret-rotation-extension
+    ``` 
+    This will publish the extension and make it available in your bicep file
+2. Update `sample\main.bicepparam` with your params
+3. Run your local bicep deployment
+    ```powershell
+    ~/.azure/bin/bicep local-deploy .\sample\main.bicepparam
+    ``` 
+
+#### Debugging
+
+If you get any errors, enable Tracing to understand errors by setting environment variable:
+```powershell
+$env:BICEP_TRACING_ENABLED = "false"
+```
+
+## Disclaimer
+
+Sample only – not an official Microsoft supported extension. Use at your own risk.
