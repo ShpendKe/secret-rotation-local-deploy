@@ -3,3 +3,4 @@ src/obj/*
 
 bin/*
 obj/*
+.idea/*
