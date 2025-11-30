@@ -9,7 +9,7 @@ namespace SecretRotationExtension.EntraId;
 public interface ISecretClient
 {
     Task<IEnumerable<AppRegistration>> GetAppRegistrationWithExpiringDates();
-    Task<(string, DateTimeOffset Value)> RecreateSecret(string appId, string displayName, int expiresInDays);
+    Task<(string Secret, DateTimeOffset Value)> RecreateSecret(string appId, string displayName, int expiresInDays);
     Task DeleteSecret(string appId, Guid keyId);
 }
 
@@ -23,7 +23,7 @@ public class EntraIdSecretClient : ISecretClient
 
         _graphClient = new GraphServiceClient(defaultAzureCredential);
     }
-    
+
     public async Task<IEnumerable<AppRegistration>> GetAppRegistrationWithExpiringDates()
     {
         var appRegistrations = await _graphClient.Applications.GetAsync();
@@ -39,7 +39,7 @@ public class EntraIdSecretClient : ISecretClient
         ));
     }
 
-    public async Task<(string, DateTimeOffset Value)> RecreateSecret(string appId, string displayName, int expiresInDays)
+    public async Task<(string Secret, DateTimeOffset Value)> RecreateSecret(string appId, string displayName, int expiresInDays)
     {
         var newSecret = new PasswordCredential
         {
