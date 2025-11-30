@@ -6,7 +6,14 @@ using Microsoft.Graph.Models;
 
 namespace SecretRotationExtension.EntraId;
 
-public class EntraIdSecretClient
+public interface ISecretClient
+{
+    Task<IEnumerable<AppRegistration>> GetAppRegistrationWithExpiringDates();
+    Task<(string, DateTimeOffset Value)> RecreateSecret(string appId, string displayName, int expiresInDays);
+    Task DeleteSecret(string appId, Guid keyId);
+}
+
+public class EntraIdSecretClient : ISecretClient
 {
     private readonly GraphServiceClient _graphClient;
 

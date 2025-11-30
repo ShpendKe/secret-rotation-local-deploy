@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder();
 
 builder.AddBicepExtensionHost(args);
 builder.Services
+    .AddSingleton<ISecretClient, EntraIdSecretClient>()
     .AddBicepExtension(
         name: "SecretRotation",
         version: "0.0.1",

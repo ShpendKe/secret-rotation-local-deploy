@@ -34,8 +34,8 @@ public class SecretRotationSourceEntraId : SecretRotationSourceIdentifier
     [TypeProperty("The number of days until the secret expires (default 365).")]
     public int ExpiresInDays { get; set; } = 180;
 
-    [TypeProperty("App registrations which should be considered for rotation.")]
-    public string[] Apps { get; set; } = null!;
+    [TypeProperty("App registration with secret name which should be considered for rotation. Others are not rotated.")]
+    public SecretsToRotate[] SecretsToRotate { get; set; } = null!;
     
     [TypeProperty("If true, deletes the old secret after renewal.")]
     public bool DeleteAfterRenew { get; set; } = false;
@@ -43,6 +43,12 @@ public class SecretRotationSourceEntraId : SecretRotationSourceIdentifier
     // Output
     [TypeProperty("App registrations which should be considered for rotation.", ObjectTypePropertyFlags.ReadOnly)]
     public AppRegistrationWithSecret[] AppsWithExpiringSecrets { get; set; } = null!;
+}
+
+public class SecretsToRotate
+{
+    public string AppRegistrationName { get; set; } = null!;
+    public string SecretName { get; set; } = null!;
 }
 
 public class AppRegistrationWithSecret
@@ -56,16 +62,10 @@ public class AppRegistrationWithSecret
     public bool IsRenewed { get; set; } = false;
 }
 
-public class ExpiringSecret
-{
-    public string DisplayName { get; set; } = null!;
-    public string ExpiresOn { get; set; } = null!;
-    public string Value { get; set; } = null!;
-}
-
 public class SecretRotationSourceIdentifier
 {
     // Required identifier property
-    [TypeProperty("The unique id of the resource.", ObjectTypePropertyFlags.Identifier | ObjectTypePropertyFlags.Required)]
+    [TypeProperty("The unique id of the resource.",
+        ObjectTypePropertyFlags.Identifier | ObjectTypePropertyFlags.Required)]
     public required string Id { get; set; }
 }

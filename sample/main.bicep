@@ -3,14 +3,17 @@ extension secretrotation
 
 param secretRotations secretRotation[]
 
+param rotateSecretsExpiringWithinDays int = 10
+param newGeneratedSecretsWithNewExpiringDateOffsetInDays int = 10
+
 resource entraIdApps 'SecretRotationSourceEntraId' = [
   for i in range(0, length(secretRotations)): {
     id: secretRotations[i].source.tenantId
-    rotateSecretsExpiringWithinDays: 30
-    expiresInDays: 10
+    rotateSecretsExpiringWithinDays: rotateSecretsExpiringWithinDays
+    expiresInDays: newGeneratedSecretsWithNewExpiringDateOffsetInDays
     deleteAfterRenew: true
-    apps: [
-      for j in range(0, length(secretRotations[i].secretTransfers)): secretRotations[i].secretTransfers[j].sourceSecretKey.appRegistrationName
+    secretsToRotate: [
+      for j in range(0, length(secretRotations[i].secretTransfers)): secretRotations[i].secretTransfers[j].sourceSecretKey
     ]
   }
 ]
