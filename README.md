@@ -18,7 +18,7 @@ Custom Bicep Local Extension to rotate secrets from source (e.g. Entra Id) and s
 - .NET 9 SDK
 - Bicep CLI v0.37.4+ (for `local-deploy`)
 
-## How to use it locally or via an Azure Container Registry (ACR)
+## How to use it locally
 
 Here are the steps to run it either locally or using an ACR.
 
@@ -41,7 +41,7 @@ Run the scripts from root folder.
 
 If you get any errors, enable Tracing to understand errors by setting environment variable:
 ```powershell
-$env:BICEP_TRACING_ENABLED = "false"
+$env:BICEP_TRACING_ENABLED = "true"
 ```
 
 ## Disclaimer
