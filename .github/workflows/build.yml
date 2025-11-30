@@ -49,6 +49,9 @@ jobs:
           az config set bicep.use_binary_from_path=false
           az bicep install
         
+      - name: Set execute permissions
+        run: chmod +x ./infra/scripts/publish.ps1
+        
       - name: Publish Locally
         run: |
           ./infra/scripts/publish.ps1 -Target ./secret-rotation-extension
