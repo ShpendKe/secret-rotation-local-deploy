@@ -7,7 +7,7 @@ using SecretRotationExtension.EntraId;
 
 namespace SecretRotationExtension.Test;
 
-public class CreateOrUpdateSpecs
+public class CreateOrUpdateEntraIdSecretsSpecs
 {
     private readonly SecretRotationEntraIdHandler _handler;
 
@@ -37,7 +37,7 @@ public class CreateOrUpdateSpecs
 
     private readonly ISecretClient _secretClientFake;
 
-    public CreateOrUpdateSpecs()
+    public CreateOrUpdateEntraIdSecretsSpecs()
     {
         _secretClientFake = A.Fake<ISecretClient>();
 
