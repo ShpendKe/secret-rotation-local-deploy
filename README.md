@@ -28,7 +28,7 @@ Run the scripts from root folder.
 
 1. Publish and run secret rotation extension locally:  
     ```powershell
-    .\infra\scripts\Publish-Extension.ps1 -Target ./secret-rotation-extension
+    .\infra\scripts\publish.ps1 -Target ./secret-rotation-extension
     ```
     This will publish the extension and make it available in your bicep file
 2. Update `sample\main.bicepparam` with your params (e.g. TenantId)
