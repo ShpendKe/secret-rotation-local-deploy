@@ -1,0 +1,76 @@
+targetScope = 'local'
+extension secretrotation
+
+param secretRotations secretRotation[]
+
+resource entraIdApps 'SecretRotationSourceEntraId' = [
+  for i in range(0, length(secretRotations)): {
+    id: secretRotations[i].source.tenantId
+    rotateSecretsExpiringWithinDays: 30
+    expiresInDays: 10
+    deleteAfterRenew: true
+    apps: [
+      for j in range(0, length(secretRotations[i].secretTransfers)): secretRotations[i].secretTransfers[j].sourceSecretKey.appRegistrationName
+    ]
+  }
+]
+
+func getSecretValue(apps array, sourceSecretKey object) object =>
+  toObject(apps, a => '${a.appRegistrationName}-${a.secretName}')['${sourceSecretKey.appRegistrationName}-${sourceSecretKey.secretName}']
+
+module kv 'kv.bicep' = [
+  for i in range(0, length(secretRotations)): {
+    name: secretRotations[i].target.keyVault
+    params: {
+      #disable-next-line no-hardcoded-env-urls
+      vaultUri: 'https://${secretRotations[i].target.keyVault}.vault.azure.net'
+      secrets: [
+        for j in range(0, length(secretRotations[i].secretTransfers)): {
+          secretKey: secretRotations[i].secretTransfers[j].targetSecretKey
+          value: getSecretValue(
+            entraIdApps[i].appsWithExpiringSecrets,
+            secretRotations[i].secretTransfers[j].sourceSecretKey
+          )
+        }
+      ]
+    }
+  }
+]
+
+// Outputs
+output entraIdAppsOutput array = [
+  for ii in range(0, length(secretRotations)): toObject(
+    entraIdApps[ii].appsWithExpiringSecrets,
+    a => '${a.appRegistrationName}-${a.secretName}',
+    c => {
+      appRegistrationName: c.appRegistrationName
+      secretName: c.secretName
+      isRenewed: c.isRenewed
+      isExpiringSoon: c.isExpiringSoon
+    }
+  )
+]
+
+type secretRotation = {
+  source: secretSource
+  target: secretTarget
+  secretTransfers: secretTransfer[]
+}
+
+type secretSource = {
+  tenantId: string
+}
+
+type secretTarget = {
+  keyVault: string
+}
+
+type secretTransfer = {
+  sourceSecretKey: secretKeySource
+  targetSecretKey: string
+}
+
+type secretKeySource = {
+  appRegistrationName: string
+  secretName: string
+}

@@ -1,0 +1,10 @@
+{
+  "experimentalFeaturesEnabled": {
+    "localDeploy": true
+  },
+  "extensions": {
+    "keyvault": "br:bicepextdemo.azurecr.io/extensions/keyvault:0.1.2",
+    "secretrotation": "../secret-rotation-extension" // local
+  },
+  "implicitExtensions": []
+}

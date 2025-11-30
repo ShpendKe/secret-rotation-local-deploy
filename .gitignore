@@ -1,0 +1,7 @@
+src/bin/*
+src/obj/*
+
+bin/*
+obj/*
+.idea/*
+secret-rotation-extension
