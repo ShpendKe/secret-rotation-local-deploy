@@ -40,7 +40,7 @@ Run the scripts from root folder.
     param secretRotations = [
       {
         source: {
-          tenantId: '12345678-1234-1234-1234-1234567890123'
+          tenantId: '{YOUR-TENANT-ID}'
         }
         target: {
           keyVault: 'secretrotationkv'
