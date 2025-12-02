@@ -10,7 +10,7 @@ builder.Services
     .AddSingleton<ISecretClient, EntraIdSecretClient>()
     .AddBicepExtension(
         name: "SecretRotation",
-        version: "0.0.1",
+        version: ThisAssembly.AssemblyInformationalVersion.Split('+')[0],
         isSingleton: true,
         typeAssembly: typeof(Program).Assembly)
     .WithResourceHandler<SecretRotationEntraIdHandler>();
