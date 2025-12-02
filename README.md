@@ -20,6 +20,11 @@ Custom Bicep Local Extension to rotate secrets from source (e.g. Entra Id) and s
 - .NET 9 SDK
 - Bicep CLI v0.37.4+ (for `local-deploy`)
 
+### For development
+
+- Github CLI
+- Bash + jq
+
 ## How to use it locally
 
 Here are the steps to run it either locally or using an ACR.
