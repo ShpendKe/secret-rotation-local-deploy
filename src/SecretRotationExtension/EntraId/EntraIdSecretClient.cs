@@ -6,20 +6,16 @@ using Microsoft.Graph.Models;
 
 namespace SecretRotationExtension.EntraId;
 
-public interface ISecretClient
-{
-    Task<IEnumerable<AppRegistration>> GetAppRegistrationWithExpiringDates();
-    Task<(string Secret, DateTimeOffset Value)> RecreateSecret(string appId, string displayName, int expiresInDays);
-    Task DeleteSecret(string appId, Guid keyId);
-}
-
 public class EntraIdSecretClient : ISecretClient
 {
     private readonly GraphServiceClient _graphClient;
 
-    public EntraIdSecretClient()
+    public EntraIdSecretClient(string tenantId)
     {
-        DefaultAzureCredential defaultAzureCredential = new();
+        DefaultAzureCredential defaultAzureCredential = new(new DefaultAzureCredentialOptions
+        {
+            TenantId = tenantId
+        });
 
         _graphClient = new GraphServiceClient(defaultAzureCredential);
     }
@@ -39,7 +35,8 @@ public class EntraIdSecretClient : ISecretClient
         ));
     }
 
-    public async Task<(string Secret, DateTimeOffset Value)> RecreateSecret(string appId, string displayName, int expiresInDays)
+    public async Task<(string Secret, DateTimeOffset NewExpireDate)> RecreateSecret(string appRegistrationId, string displayName,
+        int expiresInDays)
     {
         var newSecret = new PasswordCredential
         {
@@ -47,7 +44,7 @@ public class EntraIdSecretClient : ISecretClient
             EndDateTime = DateTime.UtcNow.AddDays(expiresInDays)
         };
 
-        var created = await _graphClient.Applications[appId]
+        var created = await _graphClient.Applications[appRegistrationId]
             .AddPassword
             .PostAsync(new AddPasswordPostRequestBody
             {
@@ -57,16 +54,25 @@ public class EntraIdSecretClient : ISecretClient
         return (created?.SecretText!, created!.EndDateTime!.Value);
     }
 
-    public async Task DeleteSecret(string appId, Guid keyId)
+    public async Task DeleteSecret(string appRegistrationId, Guid secretKeyId)
     {
-        await _graphClient.Applications[appId].RemovePassword.PostAsync(
+        await _graphClient.Applications[appRegistrationId].RemovePassword.PostAsync(
             new RemovePasswordPostRequestBody
             {
-                KeyId = keyId
+                KeyId = secretKeyId
             });
     }
 }
 
-public record AppRegistration(string DisplayName, string Id, IEnumerable<Secret> ExpiringSecrets);
+public record AppRegistration(
+    string DisplayName,
+    string Id,
+    IEnumerable<Secret> ExpiringSecrets);
 
-public record Secret(string DisplayName, Guid KeyId, DateTimeOffset EndDateTime, bool IsExpiringSoon = false, bool IsRenewed = false, string? Value = null);
+public record Secret(
+    string DisplayName,
+    Guid KeyId,
+    DateTimeOffset EndDateTime,
+    bool IsExpiringSoon = false,
+    bool IsRenewed = false,
+    string? Value = null);
