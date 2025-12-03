@@ -5,7 +5,7 @@ namespace SecretRotationExtension.EntraId;
 [BicepFrontMatter("category", "Sample")]
 [BicepDocHeading(
     "SecretRotationSourceEntraId",
-    "Represents a entra id secret rotation resource that demonstrates all available documentation attributes."
+    "Represents an entra id secret rotation resource that demonstrates all available documentation attributes."
 )]
 [BicepDocExample(
     "Rotate secrets for a basic example resource",
@@ -19,14 +19,17 @@ resource entraIdApps 'SecretRotationSourceEntraId' = {
   rotateSecretsExpiringWithinDays: 30
   expiresInDays: 180
   deleteAfterRenew: true
-  apps: [
-    'expiredSecretApp'
-  ]
+  secretsToRotate: [
+      {
+          appRegistrationName: 'expiredSecretApp'
+          secretName: 'expiredSecretNameInEntraId'
+      }
+    ]
 }
 "
 )]
 [ResourceType("SecretRotationSourceEntraId")]
-public class SecretRotationSourceEntraId : SecretRotationSourceIdentifier
+public class SecretRotationSourceEntraId : SecretRotationSourceEntraIdIdentifier
 {
     [TypeProperty("Rotate secrets expiring within this many days (default 30).")]
     public int RotateSecretsExpiringWithinDays { get; set; } = 30;
@@ -36,10 +39,10 @@ public class SecretRotationSourceEntraId : SecretRotationSourceIdentifier
 
     [TypeProperty("App registration with secret name which should be considered for rotation. Others are not rotated.")]
     public SecretsToRotate[] SecretsToRotate { get; set; } = null!;
-    
+
     [TypeProperty("If true, deletes the old secret after renewal.")]
     public bool DeleteAfterRenew { get; set; } = false;
-    
+
     // Output
     [TypeProperty("App registrations which should be considered for rotation.", ObjectTypePropertyFlags.ReadOnly)]
     public AppRegistrationWithSecret[] AppsWithExpiringSecrets { get; set; } = null!;
@@ -57,12 +60,12 @@ public class AppRegistrationWithSecret
     public string SecretName { get; set; } = null!;
     public string SecretExpiresOn { get; set; } = null!;
     public string SecretValue { get; set; } = null!;
-    
+
     public bool IsExpiringSoon { get; set; } = false;
     public bool IsRenewed { get; set; } = false;
 }
 
-public class SecretRotationSourceIdentifier
+public class SecretRotationSourceEntraIdIdentifier
 {
     // Required identifier property
     [TypeProperty("The unique id of the resource.",

@@ -1,13 +1,18 @@
 using Microsoft.AspNetCore.Builder;
 using Bicep.Local.Extension.Host.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SecretRotationExtension;
 using SecretRotationExtension.EntraId;
 
 var builder = WebApplication.CreateBuilder();
 
 builder.AddBicepExtensionHost(args);
 builder.Services
-    .AddSingleton<ISecretClient, EntraIdSecretClient>()
+    .AddSingleton<SecretRotatorFactory>(provider =>
+        new SecretRotatorFactory(
+            provider.GetRequiredService<ILogger<SecretRotator>>(),
+            tenantId => new EntraIdSecretClient(tenantId)))
     .AddBicepExtension(
         name: "SecretRotation",
         version: ThisAssembly.AssemblyInformationalVersion.Split('+')[0],

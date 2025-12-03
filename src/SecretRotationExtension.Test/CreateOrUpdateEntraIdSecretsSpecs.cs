@@ -11,39 +11,12 @@ public class CreateOrUpdateEntraIdSecretsSpecs
 {
     private readonly SecretRotationEntraIdHandler _handler;
 
-    private readonly IEnumerable<AppRegistration> _sampleAppRegistrations =
-    [
-        new(
-            "AppRegWithoutSecret",
-            Guid.NewGuid().ToString(),
-            []),
-        new(
-            "AppRegWithSecret",
-            Guid.NewGuid().ToString(),
-            [
-                new Secret("Secret", Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(180)),
-                new Secret("ExpiringSecret", Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(10)),
-                new Secret("AnotherExpiringSecret", Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(10))
-            ]),
-        new(
-            "AnotherAppRegWithSecret",
-            Guid.NewGuid().ToString(),
-            [
-                new Secret("Secret", Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(180)),
-                new Secret("SomeSecret", Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(180)),
-                new Secret("SomeExpiringSecret", Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(10))
-            ])
-    ];
-
-    private readonly ISecretClient _secretClientFake;
-
     public CreateOrUpdateEntraIdSecretsSpecs()
     {
-        _secretClientFake = A.Fake<ISecretClient>();
-
         _handler = new SecretRotationEntraIdHandler(
-            A.Fake<ILogger<SecretRotationEntraIdHandler>>(),
-            _secretClientFake
+            new SecretRotatorFactory(
+                A.Fake<ILogger<SecretRotator>>(),
+                _ => new FakeSecretClient())
         );
     }
 
@@ -59,8 +32,6 @@ public class CreateOrUpdateEntraIdSecretsSpecs
                 new SecretsToRotate { AppRegistrationName = "AppRegWithSecret", SecretName = "ExpiringSecret" }
             ]
         };
-
-        SetupClient();
 
         // Act
         var response = await _handler.CreateOrUpdate(
@@ -90,8 +61,6 @@ public class CreateOrUpdateEntraIdSecretsSpecs
                 new SecretsToRotate { AppRegistrationName = "AppRegWithSecret", SecretName = "ExpiringSecret" }
             ]
         };
-
-        SetupClient();
 
         // Act
         var response = await _handler.CreateOrUpdate(
@@ -125,8 +94,6 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             ]
         };
 
-        SetupClient();
-
         // Act
         var response = await _handler.CreateOrUpdate(
             CreateRequest(sourceProperties),
@@ -156,15 +123,5 @@ public class CreateOrUpdateEntraIdSecretsSpecs
                 new JsonSerializerOptions(JsonSerializerDefaults.Web)),
             Type = typeof(T).Name
         };
-    }
-
-    private void SetupClient()
-    {
-        A.CallTo(() => _secretClientFake.RecreateSecret(A<string>.Ignored, A<string>.Ignored, A<int>.Ignored))
-            .ReturnsLazily(a => Task.FromResult(
-                (a.Arguments[0] as string, DateTimeOffset.UtcNow.AddDays((int)a.Arguments[2]!)))!);
-
-        A.CallTo(() => _secretClientFake.GetAppRegistrationWithExpiringDates())
-            .Returns(_sampleAppRegistrations);
     }
 }
