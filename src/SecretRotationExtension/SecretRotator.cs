@@ -28,12 +28,15 @@ public class SecretRotator
             .Select(appRegistration =>
                 appRegistration with
                 {
-                    ExpiringSecrets = appRegistration.ExpiringSecrets.Select(secret =>
-                        secret with
-                        {
-                            IsExpiringSoon = secret.EndDateTime.UtcDateTime <=
-                                             DateTimeOffset.UtcNow.AddDays(_rotateSecretsExpiringWithinDays)
-                        })
+                    ExpiringSecrets = appRegistration.ExpiringSecrets
+                        .Select(secret =>
+                            secret with
+                            {
+                                IsExpiringSoon = secret.EndDateTime.UtcDateTime <=
+                                                 DateTimeOffset.UtcNow.AddDays(_rotateSecretsExpiringWithinDays)
+                            })
+                        .GroupBy(s => s.DisplayName)
+                        .Select(s => s.OrderByDescending(ss => ss.StartDateTime).First())
                 }).ToList();
     }
 

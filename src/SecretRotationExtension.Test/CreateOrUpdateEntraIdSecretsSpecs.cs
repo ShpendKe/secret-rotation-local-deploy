@@ -114,6 +114,37 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             ]);
     }
 
+    [Fact]
+    public async Task ShouldTakeLastStartedSecretIfMultipleSecretsWithSameNameOfSameAppRegistration()
+    {
+        // Arrange
+        var sourceProperties = new SecretRotationSourceEntraId
+        {
+            Id = Guid.NewGuid().ToString(),
+            SecretsToRotate =
+            [
+                new SecretsToRotate { AppRegistrationName = "AppRegWithSecret", SecretName = "ExpiringSecret" }
+            ]
+        };
+
+        // Act
+        var response = await _handler.CreateOrUpdate(
+            CreateRequest(sourceProperties),
+            CancellationToken.None);
+
+        // Assert
+        var result =
+            JsonSerializer.Deserialize<SecretRotationSourceEntraId>(
+                response.Resource.Properties,
+                JsonSerializerOptions.Web)!;
+
+        result.AppsWithExpiringSecrets
+            .Should()
+            .ContainSingle(secret =>
+                secret.AppRegistrationName == "AppRegWithSecret" &&
+                secret.SecretName == "Secret");
+    }
+
     private static ResourceSpecification CreateRequest<T>(T sourceProperties)
     {
         return new ResourceSpecification

@@ -31,6 +31,7 @@ public class EntraIdSecretClient : ISecretClient
                 new Secret(
                     p.DisplayName!,
                     p.KeyId!.Value,
+                    p.StartDateTime!.Value,
                     p.EndDateTime!.Value))
         ));
     }
@@ -72,6 +73,7 @@ public record AppRegistration(
 public record Secret(
     string DisplayName,
     Guid KeyId,
+    DateTimeOffset StartDateTime,
     DateTimeOffset EndDateTime,
     bool IsExpiringSoon = false,
     bool IsRenewed = false,
