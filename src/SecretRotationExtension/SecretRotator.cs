@@ -71,15 +71,27 @@ public class SecretRotator
             "Found {appRegs} app registrations with secrets",
             appRegistrationsWithSecrets.Count);
 
-        List<AppRegistration> appRegWithNewSecrets = [];
+        Dictionary<string, AppRegistration> appRegWithNewSecrets = [];
+        var newSecretsToCreate = secretsToRotate.ToList();
         foreach (var appRegistration in appRegistrationsWithSecrets)
         {
+            if (!secretsToRotate.Any(secretToRotate =>
+                    secretToRotate.AppRegistrationName == appRegistration.DisplayName))
+            {
+                _logger.LogInformation(
+                    "Skipping {appReg} as it is in the list of apps to rotate",
+                    appRegistration.DisplayName);
+                appRegWithNewSecrets[appRegistration.DisplayName] = appRegistration;
+                continue;
+            }
+
             List<Secret> secrets = [];
             foreach (var secret in appRegistration.ExpiringSecrets)
             {
-                if (!secretsToRotate.Any(secretToRotate =>
-                        secretToRotate.AppRegistrationName == appRegistration.DisplayName &&
-                        secretToRotate.SecretName == secret.DisplayName))
+                var foundSecretToRotate = secretsToRotate.FirstOrDefault(secretToRotate =>
+                    secretToRotate.SecretName == secret.DisplayName);
+
+                if (foundSecretToRotate is null)
                 {
                     _logger.LogInformation(
                         "Skipping {appReg} with secret {secretName} as it is not in the list of apps to rotate",
@@ -88,6 +100,8 @@ public class SecretRotator
                     secrets.Add(secret);
                     continue;
                 }
+
+                newSecretsToCreate.Remove(foundSecretToRotate);
 
                 if (!secret.IsExpiringSoon)
                 {
@@ -129,14 +143,40 @@ public class SecretRotator
 
             if (secrets.Any())
             {
-                appRegWithNewSecrets.Add(appRegistration with { ExpiringSecrets = secrets });
+                appRegWithNewSecrets[appRegistration.DisplayName] = appRegistration with { ExpiringSecrets = secrets };
             }
             else
             {
-                appRegWithNewSecrets.Add(appRegistration);
+                appRegWithNewSecrets[appRegistration.DisplayName] = appRegistration;
             }
         }
 
-        return appRegWithNewSecrets;
+        var lookup = appRegistrationsWithSecrets.ToDictionary(appRegistration => appRegistration.DisplayName);
+        foreach (var secretToCreate in newSecretsToCreate)
+        {
+            var (secretRenewed, newExpireDate) = await _client.RecreateSecret(
+                lookup[secretToCreate.AppRegistrationName].Id,
+                secretToCreate.SecretName,
+                newSecretsExpiresInDays);
+
+            appRegWithNewSecrets[secretToCreate.AppRegistrationName] =
+                appRegWithNewSecrets[secretToCreate.AppRegistrationName] with
+                {
+                    ExpiringSecrets =
+                    [
+                        ..appRegWithNewSecrets[secretToCreate.AppRegistrationName].ExpiringSecrets,
+                        new Secret(
+                            secretToCreate.SecretName,
+                            Guid.Empty,
+                            DateTimeOffset.UtcNow,
+                            newExpireDate,
+                            false,
+                            true,
+                            secretRenewed)
+                    ]
+                };
+        }
+
+        return appRegWithNewSecrets.Values.ToList();
     }
 }

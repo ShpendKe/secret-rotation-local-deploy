@@ -151,6 +151,35 @@ public class CreateOrUpdateEntraIdSecretsSpecs
                 secret.SecretName == "SomeSecret");
     }
 
+    [Fact]
+    public async Task ShouldCreateNewSecretIfNoSecretWithSameNameExistsForAppRegistration()
+    {
+        // Arrange
+        var sourceProperties = new SecretRotationSourceEntraId
+        {
+            Id = Guid.NewGuid().ToString(),
+            SecretsToRotate =
+            [
+                new SecretsToRotate { AppRegistrationName = "AppRegWithSecret", SecretName = "NewSecret" }
+            ]
+        };
+
+        // Act
+        var response = await _handler.CreateOrUpdate(
+            CreateRequest(sourceProperties),
+            CancellationToken.None);
+
+        // Assert
+        var result =
+            JsonSerializer.Deserialize<SecretRotationSourceEntraId>(
+                response.Resource.Properties,
+                JsonSerializerOptions.Web)!;
+
+        result.AppsWithExpiringSecrets
+            .Should()
+            .ContainSingle(secret => secret.SecretName == "NewSecret");
+    }
+
     private static ResourceSpecification CreateRequest<T>(T sourceProperties)
     {
         return new ResourceSpecification
