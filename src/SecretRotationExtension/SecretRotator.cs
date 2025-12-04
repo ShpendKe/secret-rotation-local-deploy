@@ -23,6 +23,7 @@ public class SecretRotator
     {
         var appRegistrations = await _client.GetAppRegistrationWithExpiringDates();
 
+        var expireDateInUtc = DateTimeOffset.UtcNow.AddDays(_rotateSecretsExpiringWithinDays);
         return appRegistrations
             .Where(appRegistration => appRegistration.ExpiringSecrets.Any())
             .Select(appRegistration =>
@@ -32,8 +33,7 @@ public class SecretRotator
                         .Select(secret =>
                             secret with
                             {
-                                IsExpiringSoon = secret.EndDateTime.UtcDateTime <=
-                                                 DateTimeOffset.UtcNow.AddDays(_rotateSecretsExpiringWithinDays)
+                                IsExpiringSoon = secret.EndDateTime.UtcDateTime <= expireDateInUtc
                             })
                         .GroupBy(s => s.DisplayName)
                         .Select(s => s.OrderByDescending(ss => ss.StartDateTime).First())
