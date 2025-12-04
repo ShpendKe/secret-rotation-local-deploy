@@ -35,10 +35,10 @@ public class FakeSecretClient : ISecretClient
         return Task.FromResult(SampleAppRegistrations);
     }
 
-    public Task<(string Secret, DateTimeOffset NewExpireDate)> RecreateSecret(string appRegistrationId, string displayName,
+    public Task<(string Secret, DateTimeOffset NewExpireDate)> RecreateSecret(string appRegistrationId, string secretName,
         int expiresInDays)
     {
-        return Task.FromResult((displayName, DateTimeOffset.UtcNow.AddDays(expiresInDays)));
+        return Task.FromResult((displayName: secretName, DateTimeOffset.UtcNow.AddDays(expiresInDays)));
     }
 
     public Task DeleteSecret(string appRegistrationId, Guid secretKeyId)

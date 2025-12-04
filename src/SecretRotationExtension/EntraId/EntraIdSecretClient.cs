@@ -36,12 +36,14 @@ public class EntraIdSecretClient : ISecretClient
         ));
     }
 
-    public async Task<(string Secret, DateTimeOffset NewExpireDate)> RecreateSecret(string appRegistrationId, string displayName,
+    public async Task<(string Secret, DateTimeOffset NewExpireDate)> RecreateSecret(
+        string appRegistrationId, 
+        string secretName,
         int expiresInDays)
     {
         var newSecret = new PasswordCredential
         {
-            DisplayName = displayName,
+            DisplayName = secretName,
             EndDateTime = DateTime.UtcNow.AddDays(expiresInDays)
         };
 
