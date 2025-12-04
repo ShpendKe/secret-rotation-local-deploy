@@ -18,9 +18,6 @@ resource entraIdApps 'SecretRotationSourceEntraId' = [
   }
 ]
 
-func getSecretValue(apps array, sourceSecretKey object) object =>
-  toObject(apps, a => '${a.appRegistrationName}-${a.secretName}')['${sourceSecretKey.appRegistrationName}-${sourceSecretKey.secretName}']
-
 module kv 'kv.bicep' = [
   for i in range(0, length(secretRotations)): {
     name: secretRotations[i].target.keyVault
@@ -30,10 +27,11 @@ module kv 'kv.bicep' = [
       secrets: [
         for j in range(0, length(secretRotations[i].secretTransfers)): {
           secretKey: secretRotations[i].secretTransfers[j].targetSecretKey
-          value: getSecretValue(
+          value: first(filter(
             entraIdApps[i].appsWithExpiringSecrets,
-            secretRotations[i].secretTransfers[j].sourceSecretKey
-          )
+            appReg =>
+              appReg.appRegistrationName == secretRotations[i].secretTransfers[j].sourceSecretKey.appRegistrationName && appReg.secretName == secretRotations[i].secretTransfers[j].sourceSecretKey.secretName
+          ))
         }
       ]
     }

@@ -25,6 +25,7 @@ public class FakeSecretClient : ISecretClient
             [
                 new Secret("Secret", Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(180)),
                 new Secret("SomeSecret", Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(180)),
+                new Secret("SomeSecret", Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(1), DateTimeOffset.UtcNow.AddDays(180)),
                 new Secret("SomeExpiringSecret", Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(10))
             ])
     ];

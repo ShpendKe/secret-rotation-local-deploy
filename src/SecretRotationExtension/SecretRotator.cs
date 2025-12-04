@@ -30,13 +30,13 @@ public class SecretRotator
                 appRegistration with
                 {
                     ExpiringSecrets = appRegistration.ExpiringSecrets
+                        .GroupBy(s => s.DisplayName)
+                        .Select(s => s.OrderByDescending(ss => ss.StartDateTime).First())
                         .Select(secret =>
                             secret with
                             {
                                 IsExpiringSoon = secret.EndDateTime.UtcDateTime <= expireDateInUtc
                             })
-                        .GroupBy(s => s.DisplayName)
-                        .Select(s => s.OrderByDescending(ss => ss.StartDateTime).First())
                 }).ToList();
     }
 

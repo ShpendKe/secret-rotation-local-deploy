@@ -143,6 +143,12 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             .ContainSingle(secret =>
                 secret.AppRegistrationName == "AppRegWithSecret" &&
                 secret.SecretName == "Secret");
+
+        result.AppsWithExpiringSecrets
+            .Should()
+            .ContainSingle(secret =>
+                secret.AppRegistrationName == "AnotherAppRegWithSecret" &&
+                secret.SecretName == "SomeSecret");
     }
 
     private static ResourceSpecification CreateRequest<T>(T sourceProperties)
