@@ -4,7 +4,7 @@
   },
   "extensions": {
     "keyvault": "br:bicepextdemo.azurecr.io/extensions/keyvault:0.1.2",
-    "secretrotation": "br:secretrotationbicep.azurecr.io/extensions/secretrotation:0.3.0"
+    "secretrotation": "br:secretrotationbicep.azurecr.io/extensions/secretrotation:0.3.1"
     // "secretrotation": "../secret-rotation-extension" // local
   },
   "implicitExtensions": []
