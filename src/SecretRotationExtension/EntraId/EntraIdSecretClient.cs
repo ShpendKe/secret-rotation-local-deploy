@@ -37,7 +37,7 @@ public class EntraIdSecretClient : ISecretClient
     }
 
     public async Task<(string Secret, DateTimeOffset NewExpireDate)> RecreateSecret(
-        string appRegistrationId, 
+        string appRegistrationId,
         string secretName,
         int expiresInDays)
     {
@@ -66,17 +66,3 @@ public class EntraIdSecretClient : ISecretClient
             });
     }
 }
-
-public record AppRegistration(
-    string DisplayName,
-    string Id,
-    IEnumerable<Secret> ExpiringSecrets);
-
-public record Secret(
-    string DisplayName,
-    Guid KeyId,
-    DateTimeOffset StartDateTime,
-    DateTimeOffset EndDateTime,
-    bool IsExpiringSoon = false,
-    bool IsRenewed = false,
-    string? Value = null);
