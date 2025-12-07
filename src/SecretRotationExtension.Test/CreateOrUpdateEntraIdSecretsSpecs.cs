@@ -50,7 +50,7 @@ public class CreateOrUpdateEntraIdSecretsSpecs
     }
 
     [Fact]
-    public async Task ShouldOnlyRotateSecretsSetForRotation()
+    public async Task ShouldOnlyRotateExpiringSecretsSetForRotation()
     {
         // Arrange
         var sourceProperties = new SecretRotationSourceEntraId
@@ -58,7 +58,8 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             Id = Guid.NewGuid().ToString(),
             SecretsToRotate =
             [
-                new SecretsToRotate { AppRegistrationName = "AppRegWithSecret", SecretName = "ExpiringSecret" }
+                new SecretsToRotate { AppRegistrationName = "AppRegWithSecret", SecretName = "ExpiringSecret" },
+                new SecretsToRotate { AppRegistrationName = "AppRegWithSecret", SecretName = "Secret" },
             ]
         };
 
@@ -108,10 +109,7 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             .Where(s => s is { IsRenewed: false, IsExpiringSoon: true })
             .Select(s => (s.AppRegistrationName, s.SecretName))
             .Should()
-            .BeEquivalentTo([
-                ("AppRegWithSecret", "AnotherExpiringSecret"),
-                ("AnotherAppRegWithSecret", "SomeExpiringSecret")
-            ]);
+            .BeEmpty();
     }
 
     [Fact]
@@ -142,13 +140,7 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             .Should()
             .ContainSingle(secret =>
                 secret.AppRegistrationName == "AppRegWithSecret" &&
-                secret.SecretName == "Secret");
-
-        result.AppsWithExpiringSecrets
-            .Should()
-            .ContainSingle(secret =>
-                secret.AppRegistrationName == "AnotherAppRegWithSecret" &&
-                secret.SecretName == "SomeSecret");
+                secret.SecretName == "ExpiringSecret");
     }
 
     [Fact]
