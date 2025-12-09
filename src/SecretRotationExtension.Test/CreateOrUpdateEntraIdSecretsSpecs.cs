@@ -9,14 +9,16 @@ namespace SecretRotationExtension.Test;
 
 public class CreateOrUpdateEntraIdSecretsSpecs
 {
+    private readonly FakeSecretClient _client;
     private readonly SecretRotationEntraIdHandler _handler;
 
     public CreateOrUpdateEntraIdSecretsSpecs()
     {
+        _client = new FakeSecretClient();
         _handler = new SecretRotationEntraIdHandler(
             new SecretRotatorFactory(
                 A.Fake<ILogger<SecretRotator>>(),
-                _ => new FakeSecretClient())
+                _ => _client)
         );
     }
 
@@ -47,6 +49,8 @@ public class CreateOrUpdateEntraIdSecretsSpecs
         result.AppsWithExpiringSecrets
             .Should()
             .NotContain(s => s.AppRegistrationName == "AppRegWithoutSecret");
+            
+        _client.RotatedOrCreatedSecrets.Should().HaveCount(1);
     }
 
     [Fact]
@@ -80,6 +84,8 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             .BeEquivalentTo([
                 ("AppRegWithSecret", "ExpiringSecret")
             ]);
+
+        _client.RotatedOrCreatedSecrets.Should().HaveCount(1);
     }
 
     [Fact]
@@ -110,6 +116,8 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             .Select(s => (s.AppRegistrationName, s.SecretName))
             .Should()
             .BeEmpty();
+            
+        _client.RotatedOrCreatedSecrets.Should().HaveCount(1);
     }
 
     [Fact]
@@ -141,6 +149,8 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             .ContainSingle(secret =>
                 secret.AppRegistrationName == "AppRegWithSecret" &&
                 secret.SecretName == "ExpiringSecret");
+
+        _client.RotatedOrCreatedSecrets.Should().HaveCount(1);
     }
 
     [Fact]
@@ -152,7 +162,8 @@ public class CreateOrUpdateEntraIdSecretsSpecs
             Id = Guid.NewGuid().ToString(),
             SecretsToRotate =
             [
-                new SecretsToRotate { AppRegistrationName = "AppRegWithSecret", SecretName = "NewSecret" }
+                new SecretsToRotate { AppRegistrationName = "AppRegWithSecret", SecretName = "NewSecret" },
+                new SecretsToRotate { AppRegistrationName = "AppRegWithSecret2", SecretName = "NewSecret2" }
             ]
         };
 
@@ -170,7 +181,9 @@ public class CreateOrUpdateEntraIdSecretsSpecs
         result.AppsWithExpiringSecrets
             .Should()
             .ContainSingle(secret => secret.SecretName == "NewSecret");
-    }
+
+        _client.RotatedOrCreatedSecrets.Should().HaveCount(1);
+    }    
 
     private static ResourceSpecification CreateRequest<T>(T sourceProperties)
     {

@@ -31,6 +31,8 @@ public class FakeSecretClient : ISecretClient
             ])
     ];
 
+    public List<(string AppRegistrationId, string SecretName)> RotatedOrCreatedSecrets = [];
+
     public Task<IEnumerable<AppRegistration>> GetAppRegistrationWithExpiringDates()
     {
         return Task.FromResult(SampleAppRegistrations);
@@ -39,6 +41,7 @@ public class FakeSecretClient : ISecretClient
     public Task<(string Secret, DateTimeOffset NewExpireDate)> RecreateSecret(string appRegistrationId, string secretName,
         int expiresInDays)
     {
+        RotatedOrCreatedSecrets.Add((appRegistrationId, secretName));
         return Task.FromResult((displayName: secretName, DateTimeOffset.UtcNow.AddDays(expiresInDays)));
     }
 
