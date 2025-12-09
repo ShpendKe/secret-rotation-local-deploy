@@ -149,8 +149,6 @@ public class SecretRotator
                 continue;
             }
 
-            List<(string AppRegistration, string SecretName)> newSecrets = allSecrets.Except(secrets).ToList();
-
             var rotatedOrCreatedSecrets = new List<Secret>();
 
             foreach (var secret in appRegistration.Secrets)
@@ -161,11 +159,16 @@ public class SecretRotator
                 }
             }
 
+            var secretsToCreate = secretToRotate.Select(ap => ap.SecretName).ToHashSet();
+            var existingSecrets = appRegistration.Secrets.Select(s =>s.DisplayName).ToHashSet();
+
+            var newSecrets = secretsToCreate.Where(s => !existingSecrets.Contains(s)).ToHashSet();
+
             foreach (var secret in newSecrets)
             {
                 rotatedOrCreatedSecrets.Add(
                     new Secret(
-                        secret.SecretName,
+                        secret,
                         Guid.NewGuid(),
                         DateTimeOffset.UtcNow,
                         DateTimeOffset.UtcNow.AddDays(180),
