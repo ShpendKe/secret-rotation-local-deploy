@@ -9,8 +9,9 @@ Custom Bicep Local Extension to rotate secrets from source (e.g. Entra Id) and s
 
 ![Secret Rotation Concept](./secret-rotation.png)
 
-1. Create/Rotate secrets in **source**:
+1. Creates/Rotates secrets in **source**:
    1. Entra Id (App Registration)
+   2. Entra External Id (App Registration)
 2. Save/Update rotated secrets at **target**:
    1. Azure Key Vault with [Key Vault Data Plane Extension](https://github.com/anthony-c-martin/bicep-ext-keyvault)
 
@@ -130,4 +131,5 @@ $env:BICEP_TRACING_ENABLED = "true"
 
 ## Disclaimer
 
-Sample only – not an official Microsoft supported extension. Use at your own risk.
+- Sample only – not an official Microsoft supported extension. Use at your own risk.
+- Check alternative approaches like passwordless with [Workload Identity Federation](https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation)
